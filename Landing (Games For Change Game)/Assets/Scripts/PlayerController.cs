@@ -1,61 +1,76 @@
-using System.Numerics;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-
-
-
     private Rigidbody2D rb;
     public float jumpForce = 10f;
-    public float Preasure = 0f;
-    public bool Held = false;
+    public float pressure = 0f;
+    public bool held = false;
+
+    public float rotationSpeed = 400f;
+    private bool isGrounded = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (Held == true)
+        if (held == true)
         {
-            Debug.Log("Let it gooooo");
-            jumpForce = 10f + Preasure;
-            Bounce();
-            jumpForce = 10f;
-            Held = false;
+            pressure += 10f * Time.deltaTime;
 
+            if (Input.GetKeyUp(KeyCode.Space) || pressure > 10)
+            {
+                jumpForce = 10f + pressure;
+                Bounce();
+                jumpForce = 10f;
+                held = false;
+                pressure = 0f;
+                isGrounded = false;
+            }
         }
+        float input = Input.GetAxis("Horizontal");
+        transform.Rotate(0, 0, -input * rotationSpeed * Time.deltaTime);
     }
-     void OnCollisionEnter2D(Collision2D collision)
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check what we hit using the collision data
         Debug.Log("Collided with: " + collision.gameObject.name);
 
-        // Check if the hit object has a specific tag
-        if (collision.gameObject.CompareTag("Bouncable") && !Input.GetKey(KeyCode.Space))
+        if (collision.gameObject.CompareTag("Bouncable"))
         {
-            Bounce();
+            isGrounded = true;
+
+            if (!Input.GetKey(KeyCode.Space) && held == false)
+            {
+                Bounce();
+            }
         }
     }
-    void Bounce()
+    void OnCollisionExit2D(Collision2D collision)
     {
-        rb.AddForce(new UnityEngine.Vector2(0f, jumpForce), ForceMode2D.Impulse);
+        if (collision.gameObject.CompareTag("Bouncable"))
+        {
+            isGrounded = false;
+        }
     }
 
     void OnCollisionStay2D(Collision2D collision)
     {
         Debug.Log("Stay Collision with: " + collision.gameObject.name);
-        
-        if (Input.GetKey(KeyCode.Space))
-        {
-            Held = true;
-            jumpForce = 0f;
-            Preasure += 1f;
-        }
 
+
+        if (Input.GetKey(KeyCode.Space) && isGrounded)
+        {
+            held = true;
+            jumpForce = 0f;
+        }
     }
 
+    void Bounce()
+    {
+        rb.linearVelocity = Vector2.zero;
+        rb.AddForce((Vector2)transform.up * jumpForce, ForceMode2D.Impulse);
+    }
 }
