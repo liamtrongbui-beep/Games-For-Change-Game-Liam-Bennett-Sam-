@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public float pressure = 0f;
     public bool held = false;
 
+    private Vector2 lockedPosition;
     public float rotationSpeed = 400f;
     private bool isGrounded = false;
 
