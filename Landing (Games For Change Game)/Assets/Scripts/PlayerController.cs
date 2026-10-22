@@ -74,4 +74,10 @@ public class PlayerController : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.AddForce((Vector2)transform.up * jumpForce, ForceMode2D.Impulse);
     }
+    public float getPressure()
+    {
+        return pressure;
+    }
 }
+
+
